@@ -29,7 +29,7 @@ public class DAO {
 	private static final String ENV_DB_PORT = "OPENSHIFT_DB_PORT";
 	private static final String ENV_DB_USERNAME = "OPENSHIFT_DB_USERNAME";
 	private static final String ENV_DB_PASSWORD = "OPENSHIFT_DB_PASSWORD";
-	private static final String ENV_DB_URL = "OPENSHIFT_DB_URL";
+	private static final String ENV_DB_URL = "OPENSHIFT_APP_NAME";
 	private static final String ENV_DATA_DIR = "OPENSHIFT_DATA_DIR";
 
 	public static DataSource initServet(ServletConfig config) {
