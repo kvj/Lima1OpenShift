@@ -66,7 +66,7 @@ public class UserStorage {
 				}
 				id = set.getLong(1);
 			}
-			log.info("Storing token: " + token);
+			log.debug("Storing token: " + token);
 			PreparedStatement createToken = c
 					.prepareStatement("insert into tokens (id, user_id, token, issued, accessed) values (?, ?, ?, ?, ?)");
 			createToken.setLong(1, DAO.nextID(c));

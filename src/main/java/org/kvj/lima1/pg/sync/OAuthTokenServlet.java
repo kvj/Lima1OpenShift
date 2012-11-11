@@ -31,8 +31,7 @@ public class OAuthTokenServlet extends HttpServlet {
 
 	private String checkUserNamePassword(DataSource ds,
 			OAuthTokenRequest request, String token) {
-		log.info("Checking " + request.getUsername() + " and "
-				+ request.getPassword() + ", save: " + token);
+		log.debug("Checking " + request.getUsername() + ", save: " + token);
 		return UserStorage.authorizeUser(ds, request.getUsername(),
 				request.getPassword(), token);
 	}
