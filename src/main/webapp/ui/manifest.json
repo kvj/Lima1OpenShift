@@ -1,0 +1,22 @@
+{
+  "name": "Lima1Admin",
+  "description": "Lima1 Admin UI",
+  "version": "1.0.1",
+  "manifest_version": 2,
+  "app": {
+    "launch": {
+      "local_path": "index.html"
+    }
+  },
+  "icons": {
+    "128": "img/logo_128.png",
+    "48": "img/logo_48.png",
+    "16": "img/logo_16.png"
+  },
+  "permissions": [
+    "unlimitedStorage",
+    "<all_urls>",
+    "idle",
+    "notifications"
+  ]
+}
