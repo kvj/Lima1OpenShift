@@ -50,6 +50,7 @@ public class DAO {
 			log.info(String.format("DataSource created: %s, %s, %s",
 					dataSource.getJdbcUrl(), dataSource.getUser(),
 					dataSource.getPassword()));
+			UserStorage.startTokenTimer();
 			return dataSource;
 		} catch (Exception e) {
 			log.error("Error creating datasource", e);
@@ -84,6 +85,7 @@ public class DAO {
 	public static void destroyServlet(HttpServlet servlet) {
 		ComboPooledDataSource dataSource = (ComboPooledDataSource) getDataSource(servlet
 				.getServletContext());
+		UserStorage.stopTokenTimer();
 		if (null != dataSource) {
 			try {
 				dataSource.close();

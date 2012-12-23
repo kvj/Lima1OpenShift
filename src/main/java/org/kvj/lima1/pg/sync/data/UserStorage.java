@@ -6,6 +6,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.sql.DataSource;
 
@@ -14,8 +20,27 @@ import org.slf4j.LoggerFactory;
 
 public class UserStorage {
 
+	static class TokenInfo {
+
+		String userName;
+		long created;
+		long accessed;
+
+		public TokenInfo(String username) {
+			this.userName = username;
+			created = System.currentTimeMillis();
+			accessed = created;
+		}
+
+		public void updateAccessed() {
+			accessed = System.currentTimeMillis();
+		}
+	}
+
 	private static Logger log = LoggerFactory.getLogger(UserStorage.class);
 	private static final String SALT = "lima1sync";
+	private static final long TOKEN_CHECK_MSEC = 60 * 60 * 1000;
+	private static Map<String, TokenInfo> webTokens = new HashMap<String, TokenInfo>();
 
 	private static String passwordToHash(String password) {
 		MessageDigest algorithm;
@@ -37,7 +62,7 @@ public class UserStorage {
 	}
 
 	public static String authorizeUser(DataSource ds, String username,
-			String password, String token) {
+			String password, String token, boolean web) {
 		Connection c = null;
 		try {
 			String uName = username.toLowerCase().trim();
@@ -50,6 +75,11 @@ public class UserStorage {
 			long id = 0;
 			if (!set.next()) {
 				// Create user
+				if (web) {
+					// Not allowed to create users
+					log.warn("User not found: " + uName);
+					return "Username not found";
+				}
 				id = DAO.nextID(c);
 				PreparedStatement createUser = c
 						.prepareStatement("insert into users (id, username, password, created) values (?, ?, ?, ?)");
@@ -67,6 +97,13 @@ public class UserStorage {
 				id = set.getLong(1);
 			}
 			log.debug("Storing token: " + token);
+			if (web) {
+				// Store in memory
+				synchronized (webTokens) {
+					webTokens.put(token, new TokenInfo(uName));
+				}
+				return null;
+			}
 			PreparedStatement createToken = c
 					.prepareStatement("insert into tokens (id, user_id, token, issued, accessed) values (?, ?, ?, ?, ?)");
 			createToken.setLong(1, DAO.nextID(c));
@@ -99,6 +136,13 @@ public class UserStorage {
 	public static String verifyToken(DataSource ds, String token) {
 		Connection c = null;
 		try {
+			synchronized (webTokens) {
+				TokenInfo info = webTokens.get(token);
+				if (null != info) {
+					info.updateAccessed();
+					return info.userName;
+				}
+			}
 			c = ds.getConnection();
 			PreparedStatement searchToken = c
 					.prepareStatement("select t.id, u.username from tokens t, users u where t.user_id=u.id and t.token=?");
@@ -121,6 +165,38 @@ public class UserStorage {
 			return null;
 		} finally {
 			DAO.closeConnection(c);
+		}
+	}
+
+	static Timer tokenTimer = new Timer("Token");
+	static TimerTask tokenTask = null;
+
+	public static void startTokenTimer() {
+		tokenTask = new TimerTask() {
+
+			@Override
+			public void run() {
+				synchronized (webTokens) {
+					List<String> toRemove = new ArrayList<String>();
+					for (String token : webTokens.keySet()) {
+						TokenInfo info = webTokens.get(token);
+						if (System.currentTimeMillis() - info.accessed > TOKEN_CHECK_MSEC) {
+							// Expired
+							toRemove.add(token);
+						}
+					}
+					for (String token : toRemove) {
+						webTokens.remove(token);
+					}
+				}
+			}
+		};
+		tokenTimer.schedule(tokenTask, TOKEN_CHECK_MSEC, TOKEN_CHECK_MSEC);
+	}
+
+	public static void stopTokenTimer() {
+		if (null != tokenTask) {
+			tokenTask.cancel();
 		}
 	}
 }

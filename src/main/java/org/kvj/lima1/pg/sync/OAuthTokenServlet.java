@@ -27,13 +27,14 @@ import org.slf4j.LoggerFactory;
 public class OAuthTokenServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
+	private static final Object SCOPE_WEB = "web";
 	private Logger log = LoggerFactory.getLogger(OAuthTokenServlet.class);
 
 	private String checkUserNamePassword(DataSource ds,
 			OAuthTokenRequest request, String token) {
 		log.debug("Checking " + request.getUsername() + ", save: " + token);
 		return UserStorage.authorizeUser(ds, request.getUsername(),
-				request.getPassword(), token);
+				request.getPassword(), token, request.getScopes().contains(SCOPE_WEB));
 	}
 
 	private void writeOAuthResponse(OAuthResponse r,
