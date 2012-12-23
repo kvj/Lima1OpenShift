@@ -86,3 +86,43 @@ CREATE TABLE files
 WITH (
   OIDS=FALSE
 );
+
+ALTER TABLE users ADD COLUMN email character varying(255);
+ALTER TABLE users ADD COLUMN "name" character varying(255);
+ALTER TABLE users ADD COLUMN rights integer DEFAULT 0;
+
+CREATE TABLE apps
+(
+   id bigint NOT NULL, 
+   app character varying(255), 
+   "name" character varying(512), 
+   description text, 
+   CONSTRAINT pk_apps PRIMARY KEY (id)
+) WITH (OIDS=FALSE)
+;
+
+CREATE TABLE shemas
+(
+   id bigint NOT NULL, 
+   rev integer DEFAULT 0, 
+   app_id bigint, 
+   created bigint DEFAULT 0, 
+   "schema" text, 
+   CONSTRAINT pk_schemas PRIMARY KEY (id), 
+   CONSTRAINT fk_shemas_apps FOREIGN KEY (app_id) REFERENCES apps (id)    ON UPDATE NO ACTION ON DELETE NO ACTION
+) WITH (OIDS=FALSE)
+;
+
+ALTER TABLE files ADD COLUMN status integer DEFAULT 1;
+ALTER TABLE files ADD COLUMN updated bigint DEFAULT 0;
+ALTER TABLE files ADD COLUMN token character varying(255);
+
+CREATE TABLE settings
+(
+   id bigint NOT NULL, 
+   "name" character varying(255), 
+   "value" character varying(512), 
+   description character varying(512), 
+   CONSTRAINT pk_settings PRIMARY KEY (id)
+) WITH (OIDS=FALSE)
+;

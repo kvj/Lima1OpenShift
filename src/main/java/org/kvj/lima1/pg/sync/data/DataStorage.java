@@ -407,4 +407,37 @@ public class DataStorage {
 		}
 		return "Restore data error";
 	}
+
+	public static Boolean haveData(DataSource dataSource, String app, String user, String token,
+			long from) {
+		Connection c = null;
+		try {
+			JSONObject schema = SchemaStorage.getInstance().getSchema(app);
+			if (null == schema) {
+				throw new Exception("Schema not found");
+			}
+			c = dataSource.getConnection();
+			long userID = UserStorage.findUserByName(c, user);
+			PreparedStatement data = c
+					.prepareStatement("select id "
+							+ "from data "
+							+ "where user_id=? and app=? and updated>? and token<>? limit 1");
+			data.setLong(1, userID);
+			data.setString(2, app);
+			data.setLong(3, from);
+			data.setString(4, token);
+			ResultSet set = data.executeQuery();
+			Boolean haveData = false;
+			if (set.next()) {
+				haveData = true;
+			}
+			set.close();
+			return haveData;
+		} catch (Exception e) {
+			log.error("Get data error", e);
+		} finally {
+			DAO.closeConnection(c);
+		}
+		return null;
+	}
 }

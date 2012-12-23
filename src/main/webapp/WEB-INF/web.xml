@@ -62,7 +62,11 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 		<servlet-name>Restore</servlet-name>
 		<servlet-class>org.kvj.lima1.pg.sync.rest.RestoreServlet</servlet-class>
 	</servlet>
-	<servlet-mapping>
+	<servlet>
+		<servlet-name>Ping</servlet-name>
+		<servlet-class>org.kvj.lima1.pg.sync.rest.PingServlet</servlet-class>
+	</servlet>
+		<servlet-mapping>
 		<servlet-name>Token</servlet-name>
 		<url-pattern>/token</url-pattern>
 	</servlet-mapping>
@@ -79,6 +83,10 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 		<url-pattern>/rest/out</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
+		<servlet-name>Ping</servlet-name>
+		<url-pattern>/rest/ping</url-pattern>
+	</servlet-mapping>
+		<servlet-mapping>
 		<servlet-name>Backup</servlet-name>
 		<url-pattern>/rest/backup</url-pattern>
 	</servlet-mapping>
