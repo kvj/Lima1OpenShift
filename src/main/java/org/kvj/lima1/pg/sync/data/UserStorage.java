@@ -15,6 +15,7 @@ import java.util.TimerTask;
 
 import javax.sql.DataSource;
 
+import org.kvj.lima1.pg.sync.rest.admin.model.UserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -201,5 +202,45 @@ public class UserStorage {
 		if (null != tokenTask) {
 			tokenTask.cancel();
 		}
+	}
+
+	public static UserInfo getUserInfo(DataSource ds, String username) {
+		Connection c = null;
+		try {
+			c = ds.getConnection();
+			PreparedStatement user = c
+					.prepareStatement("select id, username, created, email, name, rights from users where username=?");
+			user.setString(1, username);
+			ResultSet set = user.executeQuery();
+			if (!set.next()) {
+				// Token not found/expired - error
+				log.warn("User {} not found - error", username);
+				return null;
+			}
+			return resultSetToUserInfo(set);
+		} catch (Exception e) {
+			log.error("Token error", e);
+		} finally {
+			DAO.closeConnection(c);
+		}
+		return null;
+	}
+
+	private static UserInfo resultSetToUserInfo(ResultSet set) throws SQLException {
+		// id, username, created, email, name, rights
+		UserInfo info = new UserInfo();
+		info.id = set.getLong("id");
+		info.created = set.getLong("created");
+		info.email = set.getString("email");
+		info.name = set.getString("name");
+		info.username = set.getString("username");
+		int rights = set.getInt("rights");
+		for (UserInfo.UserRights right : UserInfo.UserRights.values()) {
+			if ((rights & right.getMask()) != 0) {
+				// Set
+				info.rights.add(right);
+			}
+		}
+		return info;
 	}
 }
