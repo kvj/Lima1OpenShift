@@ -25,9 +25,11 @@ public class UserStorage {
 		String userName;
 		long created;
 		long accessed;
+		String clientID;
 
-		public TokenInfo(String username) {
+		public TokenInfo(String username, String clientID) {
 			this.userName = username;
+			this.clientID = clientID;
 			created = System.currentTimeMillis();
 			accessed = created;
 		}
@@ -62,7 +64,7 @@ public class UserStorage {
 	}
 
 	public static String authorizeUser(DataSource ds, String username,
-			String password, String token, boolean web) {
+			String password, String token, String clientID, boolean web) {
 		Connection c = null;
 		try {
 			String uName = username.toLowerCase().trim();
@@ -100,17 +102,18 @@ public class UserStorage {
 			if (web) {
 				// Store in memory
 				synchronized (webTokens) {
-					webTokens.put(token, new TokenInfo(uName));
+					webTokens.put(token, new TokenInfo(uName, clientID));
 				}
 				return null;
 			}
 			PreparedStatement createToken = c
-					.prepareStatement("insert into tokens (id, user_id, token, issued, accessed) values (?, ?, ?, ?, ?)");
+					.prepareStatement("insert into tokens (id, user_id, token, issued, accessed, client) values (?, ?, ?, ?, ?, ?)");
 			createToken.setLong(1, DAO.nextID(c));
 			createToken.setLong(2, id);
 			createToken.setString(3, token);
 			createToken.setLong(4, System.currentTimeMillis());
 			createToken.setLong(5, System.currentTimeMillis());
+			createToken.setString(6, clientID);
 			createToken.execute();
 			return null;
 		} catch (Exception e) {

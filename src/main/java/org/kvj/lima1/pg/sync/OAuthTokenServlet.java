@@ -34,7 +34,8 @@ public class OAuthTokenServlet extends HttpServlet {
 			OAuthTokenRequest request, String token) {
 		log.debug("Checking " + request.getUsername() + ", save: " + token);
 		return UserStorage.authorizeUser(ds, request.getUsername(),
-				request.getPassword(), token, request.getScopes().contains(SCOPE_WEB));
+				request.getPassword(), token, request.getClientId(),
+				request.getScopes().contains(SCOPE_WEB));
 	}
 
 	private void writeOAuthResponse(OAuthResponse r,
