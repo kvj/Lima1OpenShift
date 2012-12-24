@@ -1,0 +1,12 @@
+#alerts {
+    position: fixed;
+    right: 1em;
+    bottom: 1em;
+    width: 400px;
+    z-index: 2000;
+}
+
+.clear {
+    clear: both;
+}
+

@@ -76,12 +76,13 @@
   OAuthProvider = (function() {
 
     function OAuthProvider(config, transport) {
-      var _ref, _ref1, _ref2, _ref3, _ref4;
+      var _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6;
       this.config = config;
       this.transport = transport;
       this.tokenURL = (_ref = (_ref1 = this.config) != null ? _ref1.tokenURL : void 0) != null ? _ref : '/token';
       this.clientID = (_ref2 = (_ref3 = this.config) != null ? _ref3.clientID : void 0) != null ? _ref2 : 'no_client_id';
-      this.token = (_ref4 = this.config) != null ? _ref4.token : void 0;
+      this.scope = (_ref4 = (_ref5 = this.config) != null ? _ref5.scope : void 0) != null ? _ref4 : 'app';
+      this.token = (_ref6 = this.config) != null ? _ref6.token : void 0;
     }
 
     OAuthProvider.prototype.getFullURL = function(app, path) {
@@ -107,7 +108,7 @@
     };
 
     OAuthProvider.prototype.tokenByUsernamePassword = function(username, password, handler) {
-      var url, _ref,
+      var url,
         _this = this;
       url = this.tokenURL;
       return this.transport.request({
@@ -118,7 +119,7 @@
           password: password,
           client_id: this.clientID,
           grant_type: 'password',
-          scope: (_ref = this.scope) != null ? _ref : 'app'
+          scope: this.scope
         }
       }, function(error, data) {
         log('Response:', error, data);
