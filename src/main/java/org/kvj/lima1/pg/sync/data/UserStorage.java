@@ -354,7 +354,7 @@ public class UserStorage {
 			PreparedStatement searchToken = c
 					.prepareStatement("select id from tokens where user_id=? and token=?");
 			searchToken.setLong(1, id);
-			searchToken.setString(1, token);
+			searchToken.setString(2, token);
 			ResultSet set = searchToken.executeQuery();
 			if (!set.next()) {
 				// Token not found/expired - error
