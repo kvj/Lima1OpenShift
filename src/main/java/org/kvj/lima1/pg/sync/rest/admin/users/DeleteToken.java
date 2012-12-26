@@ -16,7 +16,7 @@ public class DeleteToken extends BaseAdminServlet {
 	@Override
 	protected JSONObject post(JSONObject in, HttpServletRequest req) throws Exception {
 		initUserInfo(req);
-		long id = in.optLong("client_id", 0);
+		long id = in.optLong("user_id", 0);
 		String token = in.optString("token", "");
 		if (!userInfo.hasRight(UserRights.UsersAdmin) && id != userInfo.id) {
 			throw new Exception("Access denied");

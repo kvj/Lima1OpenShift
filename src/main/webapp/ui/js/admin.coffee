@@ -169,11 +169,11 @@ class AdminApp
         do (btn, item) =>
           btn.bind 'click', () =>
             @showPrompt 'Are you sure want to remove token?', =>
-              @oauth.rest '', '/rest/admin/tokens/remove?', item, (err, data) =>
+              @oauth.rest '', '/rest/admin/tokens/remove?', JSON.stringify({token: item.token, user_id: info?.id}), (err, data) =>
                 if err then return @showError err
                 @editUser info, admin
-              , test: item
-    , test: {list: [{token: 'aaa', app: 'lima1', ip: '127.0.0.1', created: dt, accessed: dt}, {token: 'bbb', app: 'whiskey2', created: dt, accessed: dt}]}
+              #, test: item
+    #, test: {list: [{token: 'aaa', app: 'lima1', ip: '127.0.0.1', created: dt, accessed: dt}, {token: 'bbb', app: 'whiskey2', created: dt, accessed: dt}]}
 
   addApp: ->
     dialog = $('#add-app-dialog')

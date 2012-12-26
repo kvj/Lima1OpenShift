@@ -270,36 +270,20 @@
           _results.push((function(btn, item) {
             return btn.bind('click', function() {
               return _this.showPrompt('Are you sure want to remove token?', function() {
-                return _this.oauth.rest('', '/rest/admin/tokens/remove?', item, function(err, data) {
+                return _this.oauth.rest('', '/rest/admin/tokens/remove?', JSON.stringify({
+                  token: item.token,
+                  user_id: info != null ? info.id : void 0
+                }), function(err, data) {
                   if (err) {
                     return _this.showError(err);
                   }
                   return _this.editUser(info, admin);
-                }, {
-                  test: item
                 });
               });
             });
           })(btn, item));
         }
         return _results;
-      }, {
-        test: {
-          list: [
-            {
-              token: 'aaa',
-              app: 'lima1',
-              ip: '127.0.0.1',
-              created: dt,
-              accessed: dt
-            }, {
-              token: 'bbb',
-              app: 'whiskey2',
-              created: dt,
-              accessed: dt
-            }
-          ]
-        }
       });
     };
 
