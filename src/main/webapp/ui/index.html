@@ -6,28 +6,159 @@
     <script type="text/javascript" src="lib/common-web/yepnope.1.5.3-min.js"></script>
     <script type="text/javascript" src="js/admin.js"></script>
   </head>
-  <body>
+  <body style="display: none;">
     <div class="container root">
       <div class="row">
         <div class="span12">
           <div class="navbar">
-            <div class="navbar-inner">
-              <a href="#" class="brand">Lima1</a>
+            <div class="navbar-inner" id="main-navigation">
+              <a href="#" class="brand" id="main-user-name">Lima1</a>
               <ul class="nav">
-                <li class="active"><a href="#" id="main-sync">User info</a></li>
-                <li><a href="#" id="main-add-notepad">Users</a></li>
+                <li><a href="#" id="main-user-info">User info</a></li>
+                <li><a href="#" id="main-data-info">Data info</a></li>
+                <li><a href="#" id="main-users" class="main-admin">Users</a></li>
+                <li><a href="#" id="main-apps" class="main-admin">Applications</a></li>
+                <li><a href="#" id="main-settings" class="main-admin">Settings</a></li>
               </ul>
               <ul class="nav pull-right">
+                <li><a href="#" id="main-logout">Logout</a></li>
               </ul>
             </div>
           </div>
         </div>
       </div>
       <div class="row">
-        
+        <div class="span12">
+          <ul class="breadcrumb" id="breadcrumb"></ul>
+        </div>
+      </div>
+      <div id="panes">
+        <div class="hide" id="pane-user-info">
+          <div class="row">
+            <div class="span4">
+              <dl class="dl-horizontal">
+                <dt>Username:</dt>
+                <dd id="user-info-username"></dd>
+                <dt>Created:</dt>
+                <dd id="user-info-created"></dd>
+              </dl>
+            </div>
+            <div class="span8">
+              <h4>User information:</h4>
+              <form action="#" class="form-horizontal">
+                <div class="control-group">
+                  <label class="control-label" for="user-info-name">Name</label>
+                  <div class="controls">
+                    <input type="text" id="user-info-name" placeholder="Name" class="input-xlarge">
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label class="control-label" for="user-info-email">E-mail</label>
+                  <div class="controls">
+                    <input type="email" id="user-info-email" placeholder="E-mail" class="input-xlarge">
+                  </div>
+                </div>
+                <div class="control-group form-buttons">
+                  <button class="btn btn-primary" id="user-info-save">Save</button>
+                  <button class="btn btn-danger" id="user-info-remove">Remove</button>
+                </div>
+              </form>
+              <h4>Tokens:</h4>
+              <table id="tokens-table" class="table">
+                <thead>
+                  <tr>
+                    <th>Application:</th>
+                    <th>IP:</th>
+                    <th>Created:</th>
+                    <th>Accessed:</th>
+                    <th>Remove:</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="row hide" id="pane-users">
+          <div class="span3">
+            <button class="btn btn-primary" id="users-refresh">Refresh</button>
+          </div>
+          <div class="span9">
+            <table id="users-table" class="table">
+              <thead>
+                <tr>
+                  <th>Username:</th>
+                  <th>Name:</th>
+                  <th>Rights:</th>
+                  <th>Edit:</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="row hide" id="pane-apps">
+          <div class="span3">
+            <button class="btn btn-primary" id="apps-refresh">Refresh</button>
+            <button class="btn btn-success" id="apps-create">+ Create</button>
+          </div>
+          <div class="span9">
+            <table id="apps-table" class="table">
+              <thead>
+                <tr>
+                  <th>ID:</th>
+                  <th>Name:</th>
+                  <th>Revision:</th>
+                  <th>Edit:</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="hide" id="pane-app-info">
+          <div class="row">
+            <div class="span4">
+              <dl class="dl-horizontal">
+                <dt>Application:</dt>
+                <dd id="app-info-app"></dd>
+                <dt>Revision:</dt>
+                <dd id="app-info-rev"></dd>
+              </dl>
+            </div>
+            <div class="span8">
+              <h4>Application configuration:</h4>
+              <form action="#" class="form-horizontal">
+                <div class="control-group">
+                  <label class="control-label" for="app-info-name">Name</label>
+                  <div class="controls">
+                    <input type="text" id="app-info-name" placeholder="Name" class="input-xlarge">
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label class="control-label" for="app-info-desc">Description</label>
+                  <div class="controls">
+                    <textarea id="app-info-desc" class="input-xlarge" rows="5"></textarea>
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label class="control-label" for="app-info-schema">JSON Schema</label>
+                  <div class="controls">
+                    <textarea id="app-info-schema" class="input-xlarge monospace" rows="10"></textarea>
+                  </div>
+                </div>
+                <div class="control-group form-buttons">
+                  <button class="btn btn-primary" id="app-info-save">Save</button>
+                  <!--<button class="btn btn-danger" id="user-info-remove">Remove</button>-->
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div id="alerts"></div>
+    <div id="network_indicator"></div>
     <div class="modal hide" id="main-login-dialog">
       <div class="modal-header">
         <h3>Login</h3>
@@ -47,15 +178,35 @@
             </div>
           </div>
           <div class="control-group">
-          <div class="controls">
-            <label class="checkbox">
-              <input type="checkbox" id="login-remember"> Remember me
-            </label>
+            <div class="controls">
+              <label class="checkbox">
+                <input type="checkbox" id="login-remember"> Remember me
+              </label>
+            </div>
           </div>
         </form>
       </div>
       <div class="modal-footer">
         <a href="#" class="btn btn-primary" id="login-do-login">Login</a>
+      </div>
+    </div>
+    <div class="modal hide" id="add-app-dialog">
+      <div class="modal-header">
+        <h3>Create application:</h3>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal">
+          <div class="control-group">
+            <label class="control-label" for="add-app-name">Login</label>
+            <div class="controls">
+              <input type="text" id="add-app-name" placeholder="Name">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <a href="#" class="btn btn-success" id="add-app-save">Add</a>
+        <a href="#" class="btn" id="add-app-cancel">Cancel</a>
       </div>
     </div>
   </body>

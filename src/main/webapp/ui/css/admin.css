@@ -6,7 +6,27 @@
     z-index: 2000;
 }
 
+#network_indicator {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
+    display: none;
+    border: 1em solid transparent;
+    border-left-color: #336699;
+    border-top-color: #336699;
+    z-index: 2000;
+}
+
+.form-buttons {
+  padding-left: 160px;
+}
+
 .clear {
     clear: both;
 }
 
+.monospace {
+  font-family: monospace;
+}
