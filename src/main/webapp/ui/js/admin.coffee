@@ -127,7 +127,7 @@ class AdminApp
         do (btn, user) =>
           btn.bind 'click', () =>
             @editUser user, yes
-    , test: {list: [@user, {username: 'test', name: 'test', created: 0, id: 1}]}
+    #, test: {list: [@user, {username: 'test', name: 'test', created: 0, id: 1}]}
 
 
   editUser: (info, admin) ->
@@ -148,10 +148,10 @@ class AdminApp
     $('#user-info-save').unbind('click').bind 'click', () =>
       info.name = nameEdit.val()
       info.email = emailEdit.val()
-      @oauth.rest '', '/rest/admin/users/info/update?', info, (err, data) =>
+      @oauth.rest '', '/rest/admin/users/info/update?', JSON.stringify(info), (err, data) =>
         if err then return @showError err
         @editUser data, admin
-      , test: info
+      #, test: info
       return no
     tbody = $('#tokens-table tbody')
     dt = new Date().getTime()

@@ -15,28 +15,43 @@ import java.util.TimerTask;
 
 import javax.sql.DataSource;
 
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.kvj.lima1.pg.sync.rest.admin.model.UserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class UserStorage {
 
-	static class TokenInfo {
+	public static class TokenInfo {
 
+		long userID;
 		String userName;
 		long created;
 		long accessed;
 		String clientID;
+		String token;
 
-		public TokenInfo(String username, String clientID) {
+		public TokenInfo(long userID, String username, String clientID, String token) {
+			this.userID = userID;
 			this.userName = username;
 			this.clientID = clientID;
+			this.token = token;
 			created = System.currentTimeMillis();
 			accessed = created;
 		}
 
 		public void updateAccessed() {
 			accessed = System.currentTimeMillis();
+		}
+
+		public JSONObject toJSON() throws JSONException {
+			JSONObject obj = new JSONObject();
+			obj.put("token", token);
+			obj.put("app", clientID);
+			obj.put("created", created);
+			obj.put("accessed", accessed);
+			return obj;
 		}
 	}
 
@@ -103,7 +118,7 @@ public class UserStorage {
 			if (web) {
 				// Store in memory
 				synchronized (webTokens) {
-					webTokens.put(token, new TokenInfo(uName, clientID));
+					webTokens.put(token, new TokenInfo(id, uName, clientID, token));
 				}
 				return null;
 			}
@@ -288,5 +303,76 @@ public class UserStorage {
 			DAO.closeConnection(c);
 		}
 		return null;
+	}
+
+	public static List<TokenInfo> getTokens(DataSource ds, long id) {
+		Connection c = null;
+		List<TokenInfo> result = new ArrayList<TokenInfo>();
+		try {
+			synchronized (webTokens) {
+				for (TokenInfo tokenInfo : webTokens.values()) {
+					if (tokenInfo.userID == id) {
+						result.add(tokenInfo);
+					}
+				}
+			}
+			c = ds.getConnection();
+			PreparedStatement tokens = c
+					.prepareStatement("select token, issued, accessed, client from tokens where user_id=? order by issued");
+			tokens.setLong(1, id);
+			ResultSet set = tokens.executeQuery();
+			while (set.next()) {
+				TokenInfo tokenInfo = new TokenInfo(id, "", set.getString(4), set.getString(1));
+				tokenInfo.created = set.getLong(2);
+				tokenInfo.accessed = set.getLong(3);
+				result.add(tokenInfo);
+			}
+		} catch (Exception e) {
+			log.error("Token error", e);
+		} finally {
+			DAO.closeConnection(c);
+		}
+		return result;
+	}
+
+	public static TokenInfo deleteToken(DataSource ds, long id, String token) {
+		synchronized (webTokens) {
+			TokenInfo tokenInfo = webTokens.get(token);
+			if (null != tokenInfo) {
+				// Found
+				if (tokenInfo.userID != id) {
+					log.error("User id is invalid");
+					return null;
+				}
+				webTokens.remove(token);
+				return tokenInfo;
+			}
+		}
+		Connection c = null;
+		try {
+			c = ds.getConnection();
+			PreparedStatement searchToken = c
+					.prepareStatement("select id tokens where user_id=? and token=?");
+			searchToken.setLong(1, id);
+			searchToken.setString(1, token);
+			ResultSet set = searchToken.executeQuery();
+			if (!set.next()) {
+				// Token not found/expired - error
+				log.warn("Token {} not found - error", token);
+				return null;
+			}
+			TokenInfo tokenInfo = new TokenInfo(id, "", "", token);
+			// Delete token
+			PreparedStatement updateToken = c
+					.prepareStatement("delete from tokens where id=?");
+			updateToken.setLong(1, set.getLong(1));
+			updateToken.execute();
+			return tokenInfo;
+		} catch (Exception e) {
+			log.error("Token error", e);
+			return null;
+		} finally {
+			DAO.closeConnection(c);
+		}
 	}
 }

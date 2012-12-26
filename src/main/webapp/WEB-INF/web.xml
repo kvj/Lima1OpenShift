@@ -78,6 +78,14 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 		<servlet-name>AdminUpdateUser</servlet-name>
 		<servlet-class>org.kvj.lima1.pg.sync.rest.admin.users.UpdateUser</servlet-class>
 	</servlet>
+	<servlet>
+		<servlet-name>AdminTokenList</servlet-name>
+		<servlet-class>org.kvj.lima1.pg.sync.rest.admin.users.TokenList</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>AdminDeleteToken</servlet-name>
+		<servlet-class>org.kvj.lima1.pg.sync.rest.admin.users.DeleteToken</servlet-class>
+	</servlet>
 	<servlet-mapping>
 		<servlet-name>Token</servlet-name>
 		<url-pattern>/token</url-pattern>
@@ -130,7 +138,15 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 		<servlet-name>AdminUpdateUser</servlet-name>
 		<url-pattern>/rest/admin/users/info/update</url-pattern>
 	</servlet-mapping>
-	<welcome-file-list>
+	<servlet-mapping>
+		<servlet-name>AdminTokenList</servlet-name>
+		<url-pattern>/rest/admin/tokens/list</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>AdminDeleteToken</servlet-name>
+		<url-pattern>/rest/admin/tokens/remove</url-pattern>
+	</servlet-mapping>
+			<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
 	</welcome-file-list>
 </web-app>
