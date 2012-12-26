@@ -11,9 +11,10 @@ public class UserInfo {
 
 	public static final int APPS_ADMIN_MASK = 1;
 	public static final int USERS_ADMIN_MASK = 2;
+	public static final int SETTINGS_ADMIN_MASK = 4;
 
 	public static enum UserRights {
-		ApplicationsAdmin(APPS_ADMIN_MASK), UsersAdmin(USERS_ADMIN_MASK);
+		ApplicationsAdmin(APPS_ADMIN_MASK), UsersAdmin(USERS_ADMIN_MASK), SettingsAdmin(SETTINGS_ADMIN_MASK);
 		private int mask;
 
 		private UserRights(int mask) {
@@ -45,5 +46,9 @@ public class UserInfo {
 		}
 		obj.put("rights", _rights);
 		return obj;
+	}
+
+	public boolean hasRight(UserRights right) {
+		return rights.contains(right);
 	}
 }

@@ -70,6 +70,14 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 		<servlet-name>AdminUserInfo</servlet-name>
 		<servlet-class>org.kvj.lima1.pg.sync.rest.admin.users.UserInfo</servlet-class>
 	</servlet>
+	<servlet>
+		<servlet-name>AdminUserList</servlet-name>
+		<servlet-class>org.kvj.lima1.pg.sync.rest.admin.users.UserList</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>AdminUpdateUser</servlet-name>
+		<servlet-class>org.kvj.lima1.pg.sync.rest.admin.users.UpdateUser</servlet-class>
+	</servlet>
 	<servlet-mapping>
 		<servlet-name>Token</servlet-name>
 		<url-pattern>/token</url-pattern>
@@ -113,6 +121,14 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 	<servlet-mapping>
 		<servlet-name>AdminUserInfo</servlet-name>
 		<url-pattern>/rest/admin/users/info</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>AdminUserList</servlet-name>
+		<url-pattern>/rest/admin/users/list</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>AdminUpdateUser</servlet-name>
+		<url-pattern>/rest/admin/users/info/update</url-pattern>
 	</servlet-mapping>
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>

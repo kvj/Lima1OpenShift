@@ -243,4 +243,50 @@ public class UserStorage {
 		}
 		return info;
 	}
+
+	public static List<UserInfo> getUsers(DataSource ds) {
+		Connection c = null;
+		List<UserInfo> result = new ArrayList<UserInfo>();
+		try {
+			c = ds.getConnection();
+			PreparedStatement user = c
+					.prepareStatement("select id, username, created, email, name, rights from users order by created");
+			ResultSet set = user.executeQuery();
+			while (set.next()) {
+				result.add(resultSetToUserInfo(set));
+			}
+		} catch (Exception e) {
+			log.error("Token error", e);
+		} finally {
+			DAO.closeConnection(c);
+		}
+		return result;
+	}
+
+	public static UserInfo updateUser(DataSource ds, long id, String name, String email) {
+		Connection c = null;
+		try {
+			c = ds.getConnection();
+			PreparedStatement update = c.prepareStatement("update users set name=?, email=? where id=?");
+			update.setString(1, name);
+			update.setString(2, email);
+			update.setLong(3, id);
+			update.executeUpdate();
+			PreparedStatement user = c
+					.prepareStatement("select id, username, created, email, name, rights from users where id=?");
+			user.setLong(1, id);
+			ResultSet set = user.executeQuery();
+			if (!set.next()) {
+				// No such user
+				log.warn("User {} not found - error", id);
+				return null;
+			}
+			return resultSetToUserInfo(set);
+		} catch (Exception e) {
+			log.error("Token error", e);
+		} finally {
+			DAO.closeConnection(c);
+		}
+		return null;
+	}
 }
