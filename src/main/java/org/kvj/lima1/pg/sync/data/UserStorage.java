@@ -352,7 +352,7 @@ public class UserStorage {
 		try {
 			c = ds.getConnection();
 			PreparedStatement searchToken = c
-					.prepareStatement("select id tokens where user_id=? and token=?");
+					.prepareStatement("select id from tokens where user_id=? and token=?");
 			searchToken.setLong(1, id);
 			searchToken.setString(1, token);
 			ResultSet set = searchToken.executeQuery();
@@ -366,6 +366,7 @@ public class UserStorage {
 			PreparedStatement updateToken = c
 					.prepareStatement("delete from tokens where id=?");
 			updateToken.setLong(1, set.getLong(1));
+			set.close();
 			updateToken.execute();
 			return tokenInfo;
 		} catch (Exception e) {
