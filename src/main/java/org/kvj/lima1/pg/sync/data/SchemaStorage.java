@@ -70,7 +70,7 @@ public class SchemaStorage {
 			PreparedStatement select = c
 					.prepareStatement("select app, \"name\", description, id from apps order by app");
 			PreparedStatement selectSchema = c
-					.prepareStatement("select \"schema\" from schemas where app_id=? order by rev desc limit 1");
+					.prepareStatement("select \"schema\" from shemas where app_id=? order by rev desc limit 1");
 			ResultSet set = select.executeQuery();
 			while (set.next()) {
 				AppInfo info = new AppInfo(set.getString(1), set.getString(2), set.getString(3));
