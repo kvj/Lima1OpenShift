@@ -177,9 +177,10 @@ public class UserStorage {
 			}
 			// Update token
 			PreparedStatement updateToken = c
-					.prepareStatement("update tokens set accessed=? where id=?");
+					.prepareStatement("update tokens set accessed=?, ip=? where id=?");
 			updateToken.setLong(1, System.currentTimeMillis());
-			updateToken.setLong(2, set.getLong(1));
+			updateToken.setString(2, ip);
+			updateToken.setLong(3, set.getLong(1));
 			updateToken.execute();
 			return set.getString(2);
 		} catch (Exception e) {
@@ -321,13 +322,14 @@ public class UserStorage {
 			}
 			c = ds.getConnection();
 			PreparedStatement tokens = c
-					.prepareStatement("select token, issued, accessed, client from tokens where user_id=? order by issued");
+					.prepareStatement("select token, issued, accessed, client, ip from tokens where user_id=? order by issued");
 			tokens.setLong(1, id);
 			ResultSet set = tokens.executeQuery();
 			while (set.next()) {
 				TokenInfo tokenInfo = new TokenInfo(id, "", set.getString(4), set.getString(1));
 				tokenInfo.created = set.getLong(2);
 				tokenInfo.accessed = set.getLong(3);
+				tokenInfo.ip = set.getString(5);
 				result.add(tokenInfo);
 			}
 		} catch (Exception e) {

@@ -126,3 +126,5 @@ CREATE TABLE settings
    CONSTRAINT pk_settings PRIMARY KEY (id)
 ) WITH (OIDS=FALSE)
 ;
+
+ALTER TABLE tokens ADD COLUMN ip character varying(255);
