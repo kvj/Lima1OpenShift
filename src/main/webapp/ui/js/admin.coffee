@@ -213,10 +213,10 @@ class AdminApp
       app.schema = schemaEdit.val()
       app.name = nameEdit.val()
       app.desc = descEdit.val()
-      @oauth.rest '', '/rest/admin/apps/update?', app, (err, data) =>
+      @oauth.rest '', '/rest/admin/apps/update?', JSON.stringify(app), (err, data) =>
         if err then return @showError err
-        @editApp app
-      , test: app
+        @showAppsInfo()
+      #, test: app
       return no
 
   showAppsInfo: ->

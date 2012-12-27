@@ -352,13 +352,11 @@
         app.schema = schemaEdit.val();
         app.name = nameEdit.val();
         app.desc = descEdit.val();
-        _this.oauth.rest('', '/rest/admin/apps/update?', app, function(err, data) {
+        _this.oauth.rest('', '/rest/admin/apps/update?', JSON.stringify(app), function(err, data) {
           if (err) {
             return _this.showError(err);
           }
-          return _this.editApp(app);
-        }, {
-          test: app
+          return _this.showAppsInfo();
         });
         return false;
       });

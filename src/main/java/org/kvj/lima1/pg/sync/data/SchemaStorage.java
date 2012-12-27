@@ -134,4 +134,61 @@ public class SchemaStorage {
 			DAO.closeConnection(c);
 		}
 	}
+
+	public AppInfo updateApplication(DataSource ds, String app, String name, String desc, String schema)
+			throws StorageException {
+		Connection c = null;
+		try {
+			c = ds.getConnection();
+			PreparedStatement select = c
+					.prepareStatement("select app from apps where app=?");
+			select.setString(1, app);
+			ResultSet set = select.executeQuery();
+			if (!set.next()) {
+				// Not found
+				throw new StorageException("Application not found");
+			}
+			long id = set.getLong(1);
+			set.close();
+			PreparedStatement selectSchema = c
+					.prepareStatement("select \"schema\", rev from shemas where app_id=? order by rev desc limit 1");
+			int rev = 0;
+			JSONObject schemaObject = null;
+			try {
+				schemaObject = new JSONObject(schema);
+				rev = schemaObject.optInt("_rev", 0);
+			} catch (JSONException e) {
+				throw new StorageException("Invalid schema");
+			}
+			ResultSet schemaSet = selectSchema.executeQuery();
+			int nowRev = 0;
+			if (schemaSet.next()) {
+				nowRev = schemaSet.getInt(2);
+			}
+			if (rev > nowRev) {
+				PreparedStatement insertSchema = c
+						.prepareStatement("insert into shemas (id, app_id, created, rev, \"schema\") values (?, ?, ?, ?, ?)");
+				insertSchema.setLong(1, DAO.nextID(c));
+				insertSchema.setLong(2, id);
+				insertSchema.setLong(3, System.currentTimeMillis());
+				insertSchema.setInt(4, rev);
+				insertSchema.setString(5, schema);
+				insertSchema.execute();
+			}
+			PreparedStatement update = c.prepareStatement("update apps set name=?, desc=? where id=?");
+			update.setString(1, name);
+			update.setString(2, desc);
+			update.setLong(3, id);
+			update.execute();
+			AppInfo info = new AppInfo(app, name, desc);
+			return info;
+		} catch (StorageException e) {
+			throw e;
+		} catch (Exception e) {
+			log.error("Apps update error", e);
+			throw new StorageException("Database error");
+		} finally {
+			DAO.closeConnection(c);
+		}
+	}
 }
