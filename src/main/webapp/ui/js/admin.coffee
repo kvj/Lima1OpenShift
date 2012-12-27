@@ -193,7 +193,7 @@ class AdminApp
         if err then return @showError err
         @editApp data
         dialog.modal('hide')
-      , test: {app: app, name: 'Just created app', rev: 99}
+      #, test: {app: app, name: 'Just created app', rev: 99}
 
   editApp: (app) ->
     @showPane(null, 'pane-app-info')
@@ -241,7 +241,7 @@ class AdminApp
         do (btn, item) =>
           btn.bind 'click', () =>
             @editApp item
-    , test: {list: [{id: 0, app: 'whiskey2', rev: 1}, {id: 1, app: 'sstack', name: 'StickStack application'}]}
+    #, test: {list: [{id: 0, app: 'whiskey2', rev: 1}, {id: 1, app: 'sstack', name: 'StickStack application'}]}
 
   showDataInfo: ->
     @showPane('main-data-info', 'pane-data-info')

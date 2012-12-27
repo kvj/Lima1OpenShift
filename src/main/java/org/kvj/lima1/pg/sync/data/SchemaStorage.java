@@ -2,11 +2,20 @@ package org.kvj.lima1.pg.sync.data;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.kvj.lima1.pg.sync.rest.admin.model.AppInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,5 +60,78 @@ public class SchemaStorage {
 	public JSONObject getSchema(String app) {
 		log.debug("Getting app schema: {}", app);
 		return schemas.get(app);
+	}
+
+	public List<AppInfo> getApplications(DataSource ds) {
+		List<AppInfo> apps = new ArrayList<AppInfo>();
+		Connection c = null;
+		try {
+			c = ds.getConnection();
+			PreparedStatement select = c
+					.prepareStatement("select app, \"name\", description, id from apps order by app");
+			PreparedStatement selectSchema = c
+					.prepareStatement("select \"schema\" from schemas where app_id=? order by rev desc limit 1");
+			ResultSet set = select.executeQuery();
+			while (set.next()) {
+				AppInfo info = new AppInfo(set.getString(1), set.getString(2), set.getString(3));
+				long id = set.getLong(4);
+				selectSchema.setLong(1, id);
+				ResultSet schemaSet = selectSchema.executeQuery();
+				if (schemaSet.next()) {
+					// Have schema
+					String schemaString = schemaSet.getString(1);
+					try {
+						JSONObject obj = new JSONObject(schemaString);
+						int rev = obj.getInt("_rev");
+						info.revision = rev;
+						info.schema = obj;
+						info.schemaString = schemaString;
+					} catch (JSONException e) {
+						log.warn("Error parsing schema");
+					}
+				}
+				schemaSet.close();
+				apps.add(info);
+			}
+			set.close();
+		} catch (Exception e) {
+			log.error("Apps select error", e);
+		} finally {
+			DAO.closeConnection(c);
+		}
+		return apps;
+	}
+
+	public AppInfo addApplication(DataSource ds, String app) throws StorageException {
+		String application = app.trim().toLowerCase();
+		if ("".equals(application)) {
+			throw new StorageException("Application is empty");
+		}
+		Connection c = null;
+		try {
+			c = ds.getConnection();
+			PreparedStatement select = c
+					.prepareStatement("select app from apps where app=?");
+			select.setString(1, application);
+			ResultSet set = select.executeQuery();
+			if (set.next()) {
+				// Already created
+				throw new StorageException("Application already exists");
+			}
+			set.close();
+			PreparedStatement insert = c.prepareStatement("insert into apps (id, app) values (?, ?)");
+			insert.setLong(1, DAO.nextID(c));
+			insert.setString(2, application);
+			insert.execute();
+			AppInfo info = new AppInfo(application, "", "");
+			return info;
+		} catch (StorageException e) {
+			throw e;
+		} catch (Exception e) {
+			log.error("Apps select error", e);
+			throw new StorageException("Database error");
+		} finally {
+			DAO.closeConnection(c);
+		}
 	}
 }
