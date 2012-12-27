@@ -176,7 +176,7 @@ public class SchemaStorage {
 				insertSchema.setString(5, schema);
 				insertSchema.execute();
 			}
-			PreparedStatement update = c.prepareStatement("update apps set name=?, desc=? where id=?");
+			PreparedStatement update = c.prepareStatement("update apps set \"name\"=?, description=? where id=?");
 			update.setString(1, name);
 			update.setString(2, desc);
 			update.setLong(3, id);
