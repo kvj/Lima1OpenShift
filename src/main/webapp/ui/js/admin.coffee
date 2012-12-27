@@ -2,7 +2,6 @@ yepnope({
   load: ['lib/jquery-1.8.2.min.js', 'bs/css/bootstrap.min.css', 'bs/js/bootstrap.min.js', 'lib/custom-web/date.js', 'lib/custom-web/cross-utils.js', 'lib/common-web/underscore-min.js', 'lib/common-web/underscore.strings.js', 'css/admin.css', 'lib/lima1/net.js'],
   complete: ->
     $(document).ready(->
-      log 'App started'
       app = new AdminApp
       app.start()
     );
@@ -19,7 +18,10 @@ class AdminApp
 
   constructor: ->
     $(document.body).css(display: 'inherit')
-    jqnet = new jQueryTransport 'https://lima1-kvj.rhcloud.com'
+    url = ''
+    if _.startsWith(window.location.origin, 'chrome-extension://')
+      url = 'https://lima1-kvj.rhcloud.com'
+    jqnet = new jQueryTransport(url)
     indicator = $('#network_indicator')
     jqnet.on_start = =>
       indicator.show()
@@ -122,7 +124,8 @@ class AdminApp
         for r in user?.rights ? []
           rights += r.charAt(0)+' '
         $(document.createElement('td')).text(rights ? '').appendTo(tr)
-        btn = $(document.createElement('button')).addClass('btn').appendTo(tr)
+        td = $(document.createElement('td')).appendTo(tr)
+        btn = $(document.createElement('button')).addClass('btn').appendTo(td)
         btn.text('Edit')
         do (btn, user) =>
           btn.bind 'click', () =>
@@ -154,17 +157,18 @@ class AdminApp
       #, test: info
       return no
     tbody = $('#tokens-table tbody')
+    tbody.empty()
     dt = new Date().getTime()
     @oauth.rest '', "/rest/admin/tokens/list?id=#{info.id}&", null, (err, data) =>
       if err then return @showError err
-      tbody.empty()
       for item in data.list
         tr = $(document.createElement('tr')).appendTo(tbody)
         $(document.createElement('td')).text(item.app ? '').appendTo(tr)
         $(document.createElement('td')).text(item.ip ? '').appendTo(tr)
         $(document.createElement('td')).text(new Date(item.created).format(@DATE_TIME_FORMAT)).appendTo(tr)
         $(document.createElement('td')).text(new Date(item.accessed).format(@DATE_TIME_FORMAT)).appendTo(tr)
-        btn = $(document.createElement('button')).addClass('btn btn-danger').appendTo(tr)
+        td = $(document.createElement('td')).appendTo(tr)
+        btn = $(document.createElement('button')).addClass('btn btn-danger').appendTo(td)
         btn.text('Remove')
         do (btn, item) =>
           btn.bind 'click', () =>
@@ -231,7 +235,8 @@ class AdminApp
         $(document.createElement('td')).text(item.app ? '').appendTo(tr)
         $(document.createElement('td')).text(item.name ? '').appendTo(tr)
         $(document.createElement('td')).text(item.rev ? '-').appendTo(tr)
-        btn = $(document.createElement('button')).addClass('btn').appendTo(tr)
+        td = $(document.createElement('td')).appendTo(tr)
+        btn = $(document.createElement('button')).addClass('btn').appendTo(td)
         btn.text('Edit')
         do (btn, item) =>
           btn.bind 'click', () =>
@@ -239,7 +244,88 @@ class AdminApp
     , test: {list: [{id: 0, app: 'whiskey2', rev: 1}, {id: 1, app: 'sstack', name: 'StickStack application'}]}
 
   showDataInfo: ->
-    @showError 'Not implemented'
+    @showPane('main-data-info', 'pane-data-info')
+    @showBreadcrumbs [{caption: 'Data info'}]
+    $('#data-info-refresh').unbind('click').bind 'click', () =>
+      @showDataInfo()
+    tbody = $('#data-info-table tbody')
+    @oauth.rest '', '/rest/admin/data/list?', null, (err, data) =>
+      if err then return @showError err
+      tbody.empty()
+      for item in data?.list
+        tr = $(document.createElement('tr')).appendTo(tbody)
+        $(document.createElement('td')).text(item.app ? '').appendTo(tr)
+        $(document.createElement('td')).text(item.name ? '').appendTo(tr)
+        do (item) =>
+          td = $(document.createElement('td')).appendTo(tr)
+          btnStat = $(document.createElement('button')).addClass('btn btn-info').text('Load').appendTo(td)
+          btnStat.bind 'click', () =>
+            loadStat()
+          statTable = $(document.createElement('table')).addClass('table table-condensed stat-table').appendTo(td)
+          downloadBackup = (type) =>
+            dt = new Date().format('yyyymmdd_HHMM')
+            file = "#{item.app}_#{type}_#{dt}.zip"
+            url = "/rest/backup?fname=#{file}&type=#{type}&"
+            window.open(@oauth.getFullURL(item.app, url))
+          loadStat = =>
+            @oauth.rest item.app, '/rest/admin/data/stat?', null, (err, data) =>
+              statTable.empty()
+              addRow = (caption, value, class_caption, class_value) ->
+                tr = $(document.createElement('tr')).appendTo(statTable)
+                td = $(document.createElement('td')).addClass('stat-td-caption').appendTo(tr)
+                td.text(caption)
+                if class_caption then td.addClass(class_caption)
+                td = $(document.createElement('td')).addClass('stat-td-value').appendTo(tr)
+                td.text(value)
+                if class_value then td.addClass(class_value)
+              addRow('Objects:', data.t, 'stat-td-bold', 'stat-td-bold')
+              for st in data.d ? []
+                addRow("#{st.s}:", st.c)
+              addRow('Files:', data.f, 'stat-td-bold', 'stat-td-bold')
+              size = data.fs ? 0
+              sizes = [{size: 1024, suffix: 'B'}, {size: 1024*1024, suffix: 'Kb'}, {size: 1024*1024*1024, suffix: 'Mb'}, {size: 1024*1024*1024*1024, suffix: 'Gb'}]
+              sizeText = '???'
+              for i in [0...sizes.length]
+                sz = sizes[i]
+                if size<sz.size or i is sizes.length-1
+                  # Found or last
+                  num = Math.round(size*10240/sz.size, 0)/10
+                  sizeText = "#{num} #{sz.suffix}"
+                  break
+              addRow('Size:', sizeText)
+            , test: {t: 11, f: 0, fs: 1234567, d: [{s: 'notes', c: 99}, {s: 'sheets', c: 5}]}
+          td = $(document.createElement('td')).appendTo(tr)
+          btnBackupData = $(document.createElement('button')).addClass('btn').text('Data').appendTo(td)
+          btnBackupData.bind 'click', () =>
+            downloadBackup('data')
+          $(document.createElement('span')).text(' ').appendTo(td)
+          btnBackupFiles = $(document.createElement('button')).addClass('btn').text('Files').appendTo(td)
+          btnBackupFiles.bind 'click', () =>
+            downloadBackup('file')
+          td = $(document.createElement('td')).appendTo(tr)
+          #restoreTarget = $(document.createElement('div')).addClass('restore-target').text('DROP').appendTo(td)
+          #restoreTarget.attr(title: 'Drop backups here to restore')
+          files = $(document.createElement('input')).attr(type: 'file', multiple: 'multiple').addClass('data-restore-files').appendTo(td)
+          files.bind 'change', (e) =>
+            fileList = files.get(0)?.files
+            log 'Changed:', fileList
+            if fileList?.length>0
+              @showPrompt 'Are you sure want to restore from backup from '+fileList?.length+' files provided? It will replace all your data', =>
+                @showError 'Not implemented'
+          btnRestore = $(document.createElement('button')).addClass('btn btn-warning').text('Restore').appendTo(td)
+          btnRestore.bind 'click', () =>
+            files.click()
+          td = $(document.createElement('td')).appendTo(tr)
+          btnRemove = $(document.createElement('button')).addClass('btn btn-danger').text('Clear').appendTo(td)
+          btnRemove.bind 'click', () =>
+            @showPrompt 'Are you sure want to remove all associated data?', =>
+              @oauth.rest item.app, '/rest/admin/data/clear?', item, (err, data) =>
+                if err then return @showError err
+                @showAlert "Data removed for application #{item.app}"
+                loadStat()
+              , test: item
+    , test: {list: [{id: 0, app: 'whiskey2', rev: 1}, {id: 1, app: 'sstack', name: 'StickStack application'}]}
+
 
   showUserInfo: ->
     @editUser(@user, no)
@@ -289,7 +375,7 @@ class AdminApp
       alert.remove()
     alert = @showAlert message, persistent: yes, severity: 'block', content: div, 'Prompt'
 
-  showAlert: (message, config, title = 'Whiskey2') ->
+  showAlert: (message, config, title = 'Lima1') ->
     div = $(document.createElement('div')).appendTo($('#alerts')).addClass('alert alert-'+(config?.severity ? 'info'));
     $(document.createElement('button')).appendTo(div).addClass('close').attr({'data-dismiss': 'alert'}).html('&times;');
     $(document.createElement('h4')).appendTo(div).text(title ? 'Untitled');
