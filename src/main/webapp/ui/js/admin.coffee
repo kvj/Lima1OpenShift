@@ -189,7 +189,7 @@ class AdminApp
     dialog.find('#add-app-save').unbind('click').bind 'click', (e) =>
       app = name.val().trim().toLowerCase()
       if not app then return @showError 'Name is required'
-      @oauth.rest '', '/rest/admin/apps/add?', {app: app}, (err, data) =>
+      @oauth.rest '', '/rest/admin/apps/add?', JSON.stringify(app: app), (err, data) =>
         if err then return @showError err
         @editApp data
         dialog.modal('hide')

@@ -311,9 +311,9 @@
         if (!app) {
           return _this.showError('Name is required');
         }
-        return _this.oauth.rest('', '/rest/admin/apps/add?', {
+        return _this.oauth.rest('', '/rest/admin/apps/add?', JSON.stringify({
           app: app
-        }, function(err, data) {
+        }), function(err, data) {
           if (err) {
             return _this.showError(err);
           }
