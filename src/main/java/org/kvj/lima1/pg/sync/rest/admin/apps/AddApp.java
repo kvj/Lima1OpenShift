@@ -15,6 +15,7 @@ public class AddApp extends BaseAdminServlet {
 
 	@Override
 	protected JSONObject post(JSONObject in, HttpServletRequest req) throws Exception {
+		initUserInfo(req);
 		if (!userInfo.hasRight(UserRights.ApplicationsAdmin)) {
 			throw new Exception("Access Denied");
 		}
