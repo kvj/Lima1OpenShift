@@ -160,6 +160,7 @@ public class SchemaStorage {
 			} catch (JSONException e) {
 				throw new StorageException("Invalid schema");
 			}
+			selectSchema.setLong(1, id);
 			ResultSet schemaSet = selectSchema.executeQuery();
 			int nowRev = 0;
 			if (schemaSet.next()) {
