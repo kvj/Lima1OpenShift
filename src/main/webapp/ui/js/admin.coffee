@@ -249,7 +249,7 @@ class AdminApp
     $('#data-info-refresh').unbind('click').bind 'click', () =>
       @showDataInfo()
     tbody = $('#data-info-table tbody')
-    @oauth.rest '', '/rest/admin/data/list?', null, (err, data) =>
+    @oauth.rest '', '/rest/admin/apps/list?', null, (err, data) =>
       if err then return @showError err
       tbody.empty()
       for item in data?.list
@@ -324,7 +324,7 @@ class AdminApp
                 @showAlert "Data removed for application #{item.app}"
                 loadStat()
               , test: item
-    , test: {list: [{id: 0, app: 'whiskey2', rev: 1}, {id: 1, app: 'sstack', name: 'StickStack application'}]}
+    #, test: {list: [{id: 0, app: 'whiskey2', rev: 1}, {id: 1, app: 'sstack', name: 'StickStack application'}]}
 
 
   showUserInfo: ->

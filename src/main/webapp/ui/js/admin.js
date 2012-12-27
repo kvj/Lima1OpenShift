@@ -418,7 +418,7 @@
         return _this.showDataInfo();
       });
       tbody = $('#data-info-table tbody');
-      return this.oauth.rest('', '/rest/admin/data/list?', null, function(err, data) {
+      return this.oauth.rest('', '/rest/admin/apps/list?', null, function(err, data) {
         var item, tr, _i, _len, _ref, _ref1, _ref2, _results;
         if (err) {
           return _this.showError(err);
@@ -560,20 +560,6 @@
           })(item));
         }
         return _results;
-      }, {
-        test: {
-          list: [
-            {
-              id: 0,
-              app: 'whiskey2',
-              rev: 1
-            }, {
-              id: 1,
-              app: 'sstack',
-              name: 'StickStack application'
-            }
-          ]
-        }
       });
     };
 
