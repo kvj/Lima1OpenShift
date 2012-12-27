@@ -31,6 +31,7 @@ public class UserStorage {
 		long accessed;
 		String clientID;
 		String token;
+		public String ip = null;
 
 		public TokenInfo(long userID, String username, String clientID, String token) {
 			this.userID = userID;
@@ -51,6 +52,7 @@ public class UserStorage {
 			obj.put("app", clientID);
 			obj.put("created", created);
 			obj.put("accessed", accessed);
+			obj.put("ip", ip);
 			return obj;
 		}
 	}
@@ -152,13 +154,14 @@ public class UserStorage {
 		throw new SQLException("User " + username + " not found");
 	}
 
-	public static String verifyToken(DataSource ds, String token) {
+	public static String verifyToken(DataSource ds, String token, String ip) {
 		Connection c = null;
 		try {
 			synchronized (webTokens) {
 				TokenInfo info = webTokens.get(token);
 				if (null != info) {
 					info.updateAccessed();
+					info.ip = ip;
 					return info.userName;
 				}
 			}

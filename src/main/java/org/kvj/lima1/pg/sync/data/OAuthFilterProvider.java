@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 
 public class OAuthFilterProvider implements OAuthRSProvider {
 
+	private static final String X_CLIENT = "X-Client-IP";
+	private static final String X_FORWARDED_FOR = "X-Forwarded-For";
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	@Override
@@ -20,7 +22,7 @@ public class OAuthFilterProvider implements OAuthRSProvider {
 			HttpServletRequest req) throws OAuthProblemException {
 		log.debug("Validate request: " + rsId + ", " + token);
 		final String user = UserStorage.verifyToken(
-				DAO.getDataSource(req.getSession().getServletContext()), token);
+				DAO.getDataSource(req.getSession().getServletContext()), token, getRemoteAddress(req));
 		OAuthDecision decision = new OAuthDecision() {
 
 			@Override
@@ -51,6 +53,17 @@ public class OAuthFilterProvider implements OAuthRSProvider {
 			}
 		};
 		return decision;
+	}
+
+	private String getRemoteAddress(HttpServletRequest req) {
+		String ip = req.getRemoteAddr();
+		if (null != req.getHeader(X_CLIENT)) {
+			ip = req.getHeader(X_CLIENT);
+		}
+		if (null != req.getHeader(X_FORWARDED_FOR)) {
+			ip = req.getHeader(X_FORWARDED_FOR);
+		}
+		return ip;
 	}
 
 }
