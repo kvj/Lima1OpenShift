@@ -141,7 +141,7 @@ public class SchemaStorage {
 		try {
 			c = ds.getConnection();
 			PreparedStatement select = c
-					.prepareStatement("select app from apps where app=?");
+					.prepareStatement("select id from apps where app=?");
 			select.setString(1, app);
 			ResultSet set = select.executeQuery();
 			if (!set.next()) {
