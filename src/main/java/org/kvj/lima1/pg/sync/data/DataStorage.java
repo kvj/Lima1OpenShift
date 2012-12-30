@@ -29,10 +29,12 @@ import org.slf4j.LoggerFactory;
 
 public class DataStorage {
 
+	private static final long MAX_SEND_SIZE = 20000;
+	private static final int TRANSPORT_SIZE = 50;
 	private static Logger log = LoggerFactory.getLogger(DataStorage.class);
 	private static long nextID = 0;
 
-	private static synchronized long nextUpdated() {
+	static synchronized long nextUpdated() {
 		long result = new Date().getTime();
 		while (result <= nextID) {
 			result++;
@@ -45,11 +47,11 @@ public class DataStorage {
 			String token, long from, boolean inc) {
 		Connection c = null;
 		try {
+			long dataSize = 0;
 			JSONObject schema = SchemaStorage.getInstance().getSchema(app);
 			if (null == schema) {
 				throw new Exception("Schema not found");
 			}
-			int slots = schema.optInt("_slots", 10);
 			c = ds.getConnection();
 			long userID = UserStorage.findUserByName(c, user);
 			PreparedStatement data = c
@@ -62,7 +64,6 @@ public class DataStorage {
 			data.setLong(3, from);
 			ResultSet set = data.executeQuery();
 			JSONArray arr = new JSONArray();
-			int slots_used = 0;
 			while (set.next()) {
 				// log.info("About to send entity: {}", dataEntity);
 				String _token = set.getString(1);
@@ -78,15 +79,14 @@ public class DataStorage {
 					log.error("Not found config for stream {}", _stream);
 					continue;
 				}
-				int slots_needed = config.optInt("out", 1);
-				if (slots_used + slots_needed > slots) {
-					// log.info("Reached number of slots: {}", slots_used);
+				String object = set.getString(3);
+				if (dataSize > 0 && dataSize + object.length() > MAX_SEND_SIZE) {
 					break;
 				}
-				slots_used += slots_needed;
+				dataSize += object.length() + TRANSPORT_SIZE;
 				JSONObject dataObject = new JSONObject();
 				dataObject.put("s", _stream);
-				dataObject.put("o", set.getString(3));
+				dataObject.put("o", object);
 				dataObject.put("st", set.getInt(4));
 				dataObject.put("u", set.getLong(5));
 				dataObject.put("i", set.getLong(6));

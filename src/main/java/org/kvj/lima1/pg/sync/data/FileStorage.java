@@ -107,7 +107,7 @@ public class FileStorage {
 	}
 
 	public static String removeFile(DataSource ds, String app, String user,
-			String name) {
+			String name, String token) {
 		Connection c = null;
 		try {
 			JSONObject schema = SchemaStorage.getInstance().getSchema(app);
@@ -119,10 +119,13 @@ public class FileStorage {
 			File file = new File(DAO.getUploadFolder(getDataFolderName(app,
 					user)), name);
 			PreparedStatement removeFile = c
-					.prepareStatement("delete from files where app=? and user_id=? and name=?");
-			removeFile.setString(1, app);
-			removeFile.setLong(2, userID);
-			removeFile.setString(3, name);
+					.prepareStatement("update files set status=?, updated=?, token=? where app=? and user_id=? and name=?");
+			removeFile.setInt(1, 3);
+			removeFile.setLong(2, DataStorage.nextUpdated());
+			removeFile.setString(3, token);
+			removeFile.setString(4, app);
+			removeFile.setLong(5, userID);
+			removeFile.setString(6, name);
 			removeFile.execute();
 			if (file.exists()) {
 				try {
@@ -251,8 +254,7 @@ public class FileStorage {
 		return false;
 	}
 
-	static void clearCache(Connection c, String app, String user)
-			throws IOException, SQLException {
+	static void clearCacheFolder(String app, String user) throws IOException {
 		File folder = DAO.getUploadFolder(getDataFolderName(app, user));
 		File[] files = folder.listFiles();
 		for (File file : files) {
@@ -260,6 +262,12 @@ public class FileStorage {
 				file.delete();
 			}
 		}
+		folder.delete();
+	}
+
+	static void clearCache(Connection c, String app, String user)
+			throws IOException, SQLException {
+		clearCacheFolder(app, user);
 		long userID = UserStorage.findUserByName(c, user);
 		PreparedStatement st = c
 				.prepareStatement("delete from files where user_id=? and app=?");

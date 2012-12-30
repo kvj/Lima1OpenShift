@@ -19,7 +19,8 @@ public class RemoveFileServlet extends OAuthSecuredServlet {
 		if (null != name) {
 			String result = FileStorage.removeFile(
 					DAO.getDataSource(getServletContext()), app,
-					(String) req.getAttribute(OAuth.OAUTH_CLIENT_ID), name);
+					(String) req.getAttribute(OAuth.OAUTH_CLIENT_ID), name,
+					(String) req.getAttribute(OAuth.OAUTH_TOKEN));
 			if (null != result) {
 				throw new ServletException(result);
 			}
