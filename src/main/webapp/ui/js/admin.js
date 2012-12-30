@@ -496,21 +496,6 @@
                   }
                 }
                 return addRow('Size:', sizeText);
-              }, {
-                test: {
-                  t: 11,
-                  f: 0,
-                  fs: 1234567,
-                  d: [
-                    {
-                      s: 'notes',
-                      c: 99
-                    }, {
-                      s: 'sheets',
-                      c: 5
-                    }
-                  ]
-                }
               });
             };
             td = $(document.createElement('td')).appendTo(tr);

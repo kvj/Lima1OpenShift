@@ -1,6 +1,7 @@
 package org.kvj.lima1.pg.sync.data;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
@@ -21,6 +22,8 @@ import javax.sql.DataSource;
 import org.apache.commons.fileupload.FileItem;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
+import org.kvj.lima1.pg.sync.rest.admin.model.StatInfo;
+import org.kvj.lima1.pg.sync.rest.admin.model.UserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -439,5 +442,43 @@ public class DataStorage {
 			DAO.closeConnection(c);
 		}
 		return null;
+	}
+
+	public static StatInfo getStat(DataSource ds, UserInfo user, String app) throws StorageException {
+		Connection c = null;
+		try {
+			JSONObject schema = SchemaStorage.getInstance().getSchema(app);
+			if (null == schema) {
+				throw new StorageException("Schema not found");
+			}
+			c = ds.getConnection();
+			PreparedStatement data = c
+					.prepareStatement("select stream, count(*)"
+							+ "from data "
+							+ "where user_id=? and app=? and status<>? group by stream group by stream");
+			data.setLong(1, user.id);
+			data.setString(2, app);
+			data.setLong(3, 3);
+			ResultSet set = data.executeQuery();
+			StatInfo st = new StatInfo();
+			while (set.next()) {
+				st.objects.put(set.getString(1), set.getInt(2));
+			}
+			set.close();
+			List<File> files = FileStorage.getFiles(c, app, user);
+			for (File file : files) {
+				st.fileCount++;
+				st.fileSize += file.length();
+			}
+			return st;
+		} catch (StorageException e) {
+			log.error("Get stat error", e);
+			throw e;
+		} catch (Exception e) {
+			log.error("Get stat error", e);
+			throw new StorageException(e.getMessage(), e);
+		} finally {
+			DAO.closeConnection(c);
+		}
 	}
 }

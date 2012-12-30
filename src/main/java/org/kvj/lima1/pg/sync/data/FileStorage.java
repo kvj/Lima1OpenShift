@@ -17,6 +17,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.fileupload.FileItem;
 import org.codehaus.jettison.json.JSONObject;
+import org.kvj.lima1.pg.sync.rest.admin.model.UserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,10 +152,11 @@ public class FileStorage {
 			long userID = UserStorage.findUserByName(c, user);
 			PreparedStatement files = c
 					.prepareStatement("select name, created from files "
-							+ "where user_id=? and app=? and created>?");
+							+ "where user_id=? and app=? and created>? and status<>?");
 			files.setLong(1, userID);
 			files.setString(2, app);
 			files.setLong(3, from);
+			files.setInt(4, 3); // Not removed
 			StringBuilder meta = new StringBuilder();
 			int filesAdded = 0;
 			ResultSet filesSet = files.executeQuery();
@@ -320,5 +323,27 @@ public class FileStorage {
 			DAO.closeConnection(c);
 		}
 		return "Restore files error";
+	}
+
+	public static List<File> getFiles(Connection c, String app, UserInfo user) throws SQLException, IOException {
+		List<File> result = new ArrayList<File>();
+		PreparedStatement files = c
+				.prepareStatement("select name from files "
+						+ "where user_id=? and app=? and status<>?");
+		files.setLong(1, user.id);
+		files.setString(2, app);
+		files.setInt(3, 3); // Not removed
+		ResultSet filesSet = files.executeQuery();
+		File folder = DAO.getUploadFolder(getDataFolderName(app, user.username));
+		while (filesSet.next()) {
+			String name = filesSet.getString(1);
+			File file = new File(folder, name);
+			if (!file.exists() || !file.isFile()) {
+				log.warn("Skip file {} - not accessible", name);
+				continue;
+			}
+			result.add(file);
+		}
+		return result;
 	}
 }

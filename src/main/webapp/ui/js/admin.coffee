@@ -293,7 +293,7 @@ class AdminApp
                   sizeText = "#{num} #{sz.suffix}"
                   break
               addRow('Size:', sizeText)
-            , test: {t: 11, f: 0, fs: 1234567, d: [{s: 'notes', c: 99}, {s: 'sheets', c: 5}]}
+            #, test: {t: 11, f: 0, fs: 1234567, d: [{s: 'notes', c: 99}, {s: 'sheets', c: 5}]}
           td = $(document.createElement('td')).appendTo(tr)
           btnBackupData = $(document.createElement('button')).addClass('btn').text('Data').appendTo(td)
           btnBackupData.bind 'click', () =>
