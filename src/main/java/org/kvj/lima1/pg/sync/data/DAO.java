@@ -51,6 +51,7 @@ public class DAO {
 					dataSource.getJdbcUrl(), dataSource.getUser(),
 					dataSource.getPassword()));
 			UserStorage.startTokenTimer();
+			SchemaStorage.getInstance().load(dataSource);
 			return dataSource;
 		} catch (Exception e) {
 			log.error("Error creating datasource", e);

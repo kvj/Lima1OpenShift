@@ -1,13 +1,10 @@
 package org.kvj.lima1.pg.sync.data;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -29,25 +26,6 @@ public class SchemaStorage {
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	private SchemaStorage() {
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					getClass().getResourceAsStream(SCHEMA_FILE), "utf-8"));
-			StringBuilder builder = new StringBuilder();
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				builder.append(line);
-			}
-			reader.close();
-			JSONObject object = new JSONObject(builder.toString());
-			for (@SuppressWarnings("unchecked")
-			Iterator<String> it = object.keys(); it.hasNext();) {
-				String key = it.next();
-				log.info("Loaded schema for app: {}", key);
-				schemas.put(key, object.getJSONObject(key));
-			}
-		} catch (Exception e) {
-			log.error("Error loading schema storage", e);
-		}
 	}
 
 	public static SchemaStorage getInstance() {
@@ -60,6 +38,16 @@ public class SchemaStorage {
 	public JSONObject getSchema(String app) {
 		log.debug("Getting app schema: {}", app);
 		return schemas.get(app);
+	}
+
+	public void load(DataSource ds) {
+		List<AppInfo> apps = getApplications(ds);
+		schemas.clear();
+		for (AppInfo info : apps) {
+			if (null != info.schema) {
+				schemas.put(info.app, info.schema);
+			}
+		}
 	}
 
 	public List<AppInfo> getApplications(DataSource ds) {
@@ -175,6 +163,7 @@ public class SchemaStorage {
 				insertSchema.setInt(4, rev);
 				insertSchema.setString(5, schema);
 				insertSchema.execute();
+				schemas.put(app, schemaObject);
 			}
 			PreparedStatement update = c.prepareStatement("update apps set \"name\"=?, description=? where id=?");
 			update.setString(1, name);
