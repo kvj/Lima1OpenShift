@@ -98,7 +98,11 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 		<servlet-name>AdminUpdateApp</servlet-name>
 		<servlet-class>org.kvj.lima1.pg.sync.rest.admin.apps.UpdateApp</servlet-class>
 	</servlet>
-		<servlet-mapping>
+	<servlet>
+		<servlet-name>AdminGetStats</servlet-name>
+		<servlet-class>org.kvj.lima1.pg.sync.rest.admin.data.GetStats</servlet-class>
+	</servlet>
+			<servlet-mapping>
 		<servlet-name>Token</servlet-name>
 		<url-pattern>/token</url-pattern>
 	</servlet-mapping>
@@ -170,7 +174,11 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 		<servlet-name>AdminUpdateApp</servlet-name>
 		<url-pattern>/rest/admin/apps/update</url-pattern>
 	</servlet-mapping>
-		<welcome-file-list>
+	<servlet-mapping>
+		<servlet-name>AdminGetStats</servlet-name>
+		<url-pattern>/rest/admin/data/stat</url-pattern>
+	</servlet-mapping>
+			<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
 	</welcome-file-list>
 </web-app>

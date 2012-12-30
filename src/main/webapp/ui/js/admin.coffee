@@ -269,6 +269,7 @@ class AdminApp
             window.open(@oauth.getFullURL(item.app, url))
           loadStat = =>
             @oauth.rest item.app, '/rest/admin/data/stat?', null, (err, data) =>
+              if err then return @showError err
               statTable.empty()
               addRow = (caption, value, class_caption, class_value) ->
                 tr = $(document.createElement('tr')).appendTo(statTable)

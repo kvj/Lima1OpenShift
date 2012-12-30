@@ -449,6 +449,9 @@
             loadStat = function() {
               return _this.oauth.rest(item.app, '/rest/admin/data/stat?', null, function(err, data) {
                 var addRow, i, num, size, sizeText, sizes, st, sz, _j, _k, _len1, _ref3, _ref4, _ref5, _ref6;
+                if (err) {
+                  return _this.showError(err);
+                }
                 statTable.empty();
                 addRow = function(caption, value, class_caption, class_value) {
                   tr = $(document.createElement('tr')).appendTo(statTable);
