@@ -449,7 +449,7 @@ public class DataStorage {
 		try {
 			JSONObject schema = SchemaStorage.getInstance().getSchema(app);
 			if (null == schema) {
-				throw new StorageException("Schema not found");
+				throw new StorageException("Schema not found: " + app);
 			}
 			c = ds.getConnection();
 			PreparedStatement data = c
