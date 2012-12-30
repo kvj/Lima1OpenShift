@@ -449,13 +449,13 @@ public class DataStorage {
 		try {
 			JSONObject schema = SchemaStorage.getInstance().getSchema(app);
 			if (null == schema) {
-				throw new StorageException("Schema not found: " + app);
+				throw new StorageException("Schema not found: [" + app + "]");
 			}
 			c = ds.getConnection();
 			PreparedStatement data = c
-					.prepareStatement("select stream, count(*)"
+					.prepareStatement("select stream, count(*) "
 							+ "from data "
-							+ "where user_id=? and app=? and status<>? group by stream group by stream");
+							+ "where user_id=? and app=? and status<>? group by stream order by stream");
 			data.setLong(1, user.id);
 			data.setString(2, app);
 			data.setLong(3, 3);
