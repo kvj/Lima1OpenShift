@@ -266,8 +266,9 @@ public class DataStorage {
 						FKey fkey = fkeysToCheck.get(field);
 						if (object.has(field)) {
 							String value = object.optString(field);
-							if (null != value && !fkey.data.contains(value)) {
+							if (null != value && !"null".equals(value) && !fkey.data.contains(value)) {
 								putEntry = false;
+								log.warn("Skipping entry: " + key + ": " + field + " =  " + value);
 								break;
 							}
 						}
@@ -305,7 +306,7 @@ public class DataStorage {
 					}
 				}
 				out.flush();
-				log.debug("Stream " + key + " done. OK: " + entriesOK
+				log.info("Stream " + key + " done. OK: " + entriesOK
 						+ ". SKIP: " + entriesSkip);
 			}
 			if (null != zipEntry) {
