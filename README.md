@@ -9,6 +9,9 @@
 * Application management (create, edit, upgrade schema)
 * User and OAuth2 token management
 * Data management (View statictics, backup, restore, cleanup)
+* Available at [https://lima1-kvj.rhcloud.com/ui/](https://lima1-kvj.rhcloud.com/ui/)
+  * Test username: test00
+  * Test password: test00
 
 ### UI Screenshots:
 
