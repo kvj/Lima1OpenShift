@@ -1,7 +1,7 @@
 ## Lima1OpenShift - Implementation of Sync Service for Lima1 ##
 
 ### Main features
-* Built with Java, Servlets, PostreSQL, Twitter Bootsrap, CoffeeScript
+* Built with Java, Servlets, PostreSQL, Twitter Bootstrap, CoffeeScript
 * Provides API for [Lima1](https://github.com/kvj/Lima1) client libraries via REST and OAuth2
 * Runs on RedHat OpenShift free tier
 
